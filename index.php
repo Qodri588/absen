@@ -1,135 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hasil Realisasi MR</title>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.51.5/dist/full.css" rel="stylesheet" type="text/css" />
-    <style>
-        body {
-            font-size: 14px;
-        }
-        .input, .btn {
-            font-size: 14px;
-        }
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-size: 14px;
-        }
-        .form-item {
-            padding: 5px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            background-color: #f9fafb;
-        }
-        .form-item:nth-child(odd) {
-            background-color: #e0f7fa;
-        }
-        .form-item:nth-child(even) {
-            background-color: #fff3e0;
-        }
-        input {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Report</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    textarea {
+      resize: none;
+      overflow: hidden;
+      min-height: 150px; /* Tinggi minimum */
+    }
+  </style>
 </head>
-<body class="bg-gray-100 p-2 sm:p-4">
-
-    <div class="max-w-full sm:max-w-4xl mx-auto bg-white p-4 rounded shadow-md">
-        <h1 class="text-lg font-bold mb-4 text-center">Form Hasil Realisasi MR</h1>
-        <form id="mrForm" class="space-y-4">
-            <!-- Lokasi -->
-            <div class="grid grid-cols-1 gap-2">
-                <label class="block text-sm font-medium">Lokasi</label>
-                <input type="text" name="lokasi" class="input input-bordered w-full" required>
-            </div>
-
-            <!-- Tanggal -->
-            <div class="grid grid-cols-1 gap-2">
-                <label class="block text-sm font-medium">Tanggal</label>
-                <input type="text" name="tanggal" id="tanggal" class="input input-bordered w-full" required>
-            </div>
-
-            <!-- Pagi s/d Siang -->
-            <div class="grid grid-cols-1 gap-2">
-                <label class="block text-sm font-medium">Pagi s/d Siang</label>
-                <div id="pagiSiangContainer" class="space-y-2"></div>
-                <button type="button" onclick="addField('pagiSiangContainer')" class="btn btn-outline btn-sm w-full">+ Tambah</button>
-            </div>
-
-            <!-- Sore s/d Malam -->
-            <div class="grid grid-cols-1 gap-2">
-                <label class="block text-sm font-medium">Sore s/d Malam</label>
-                <div id="soreMalamContainer" class="space-y-2"></div>
-                <button type="button" onclick="addField('soreMalamContainer')" class="btn btn-outline btn-sm w-full">+ Tambah</button>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-full">Submit</button>
-        </form>
-
-        <!-- Output hasil Markdown -->
-        <div id="outputContainer" class="mt-4 hidden bg-gray-50 p-3 rounded shadow-md">
-            <h2 class="text-sm font-bold">Hasil Markdown:</h2>
-            <pre id="outputText" class="mt-2 bg-white p-2 rounded border"></pre>
-            <button onclick="copyToClipboard()" class="btn btn-secondary btn-sm w-full mt-2">Copy to Clipboard</button>
+<body class="has-background-light py-5">
+  <div class="container">
+    <div class="box">
+      <h1 class="title is-4 has-text-centered">Report Kunjungan</h1>
+      
+      <!-- Form Nama SPV -->
+      <div class="field">
+        <label class="label">Nama SPV</label>
+        <div class="control">
+          <input type="text" id="spvName" class="input" placeholder="Masukkan nama SPV">
         </div>
+      </div>
+
+      <!-- Form Tanggal -->
+      <div class="field">
+        <label class="label">Tanggal</label>
+        <div class="control">
+          <input type="text" id="visitDate" class="input" placeholder="Pilih tanggal">
+        </div>
+      </div>
+
+      <!-- Area Dinamis -->
+      <div id="dynamicArea"></div>
+
+      <!-- Tombol Add/Remove -->
+      <div class="field is-grouped mt-4">
+        <div class="control">
+          <button id="addButton" class="button is-primary">Tambah</button>
+        </div>
+        <div class="control">
+          <button id="removeButton" class="button is-warning">Remove</button>
+        </div>
+      </div>
+
+      <!-- Tombol Submit -->
+      <div class="field mt-4">
+        <button id="submitButton" class="button is-success is-fullwidth">Submit</button>
+      </div>
+
+      <!-- Output -->
+      <div class="field mt-4">
+        <label class="label">Hasil Report</label>
+        <textarea id="outputText" class="textarea is-fullwidth" placeholder="Hasil akan muncul di sini..."></textarea>
+      </div>
+      
+      <!-- Tombol Copy -->
+      <div class="field mt-2">
+        <button id="copyButton" class="button is-info is-fullwidth">Copy to Clipboard</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Integrasi Flatpickr
-        flatpickr("#tanggal", {
-            dateFormat: "Y-m-d",
-        });
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    // Inisialisasi Flatpickr
+    flatpickr("#visitDate", {
+      dateFormat: "d - m - Y", // Format tanggal sesuai permintaan
+    });
 
-        // Fungsi untuk menambahkan field dinamis
-        function addField(containerId) {
-            const container = document.getElementById(containerId);
-            const div = document.createElement("div");
-            div.classList.add("form-item", "flex", "flex-col", "sm:flex-row", "gap-2");
-            div.innerHTML = `
-                <input type="text" name="${containerId}User[]" placeholder="User" class="input input-bordered w-full" required>
-                <input type="text" name="${containerId}Result[]" placeholder="Hasil" class="input input-bordered w-full" required>
-                <button type="button" class="btn btn-error btn-xs sm:w-auto w-full" onclick="removeField(this)">Hapus</button>
-            `;
-            container.appendChild(div);
+    // Variabel global
+    const dynamicArea = document.getElementById('dynamicArea');
+    const addButton = document.getElementById('addButton');
+    const removeButton = document.getElementById('removeButton');
+    const submitButton = document.getElementById('submitButton');
+    const copyButton = document.getElementById('copyButton');
+    const outputText = document.getElementById('outputText');
+    let formCount = 0;
+
+    // Fungsi Tambah Form
+    addButton.addEventListener('click', () => {
+      formCount++;
+      const formGroup = document.createElement('div');
+      formGroup.classList.add('box', 'mb-4');
+      formGroup.setAttribute('id', `formGroup-${formCount}`);
+      formGroup.innerHTML = `
+        <div class="field">
+          <label class="label">Nama MR</label>
+          <div class="control">
+            <input type="text" id="mrName-${formCount}" class="input" placeholder="Masukkan nama MR">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Hasil Kunjungan</label>
+          <div class="control">
+            <textarea id="realization-${formCount}" class="textarea" placeholder="Masukkan hasil kunjungan"></textarea>
+          </div>
+        </div>
+      `;
+      dynamicArea.appendChild(formGroup);
+    });
+
+    // Fungsi Hapus Form
+    removeButton.addEventListener('click', () => {
+      if (formCount > 0) {
+        const formGroup = document.getElementById(`formGroup-${formCount}`);
+        dynamicArea.removeChild(formGroup);
+        formCount--;
+      }
+    });
+
+    // Fungsi Submit
+    submitButton.addEventListener('click', () => {
+      const spvName = document.getElementById('spvName').value.trim();
+      const visitDate = document.getElementById('visitDate').value.trim();
+      let report = `*Report Kunjungan SPV ${spvName} - Tanggal ${visitDate}*\n\n`;
+
+      for (let i = 1; i <= formCount; i++) {
+        const mrName = document.getElementById(`mrName-${i}`).value.trim();
+        let realization = document.getElementById(`realization-${i}`).value.trim();
+
+        // Menghapus semua teks sebelum "*Pagi s/d Siang:*"
+        const index = realization.indexOf("*Pagi s/d Siang:*");
+        if (index !== -1) {
+          realization = realization.substring(index); // Hanya menyisakan bagian mulai dari "*Pagi s/d Siang:*"
         }
 
-        // Fungsi untuk menghapus field
-        function removeField(button) {
-            button.parentElement.remove();
+        if (mrName && realization) {
+          report += `\n*${mrName}*\n${realization}\n`;
         }
+      }
 
-        // Fungsi untuk mengirim data tanpa reload halaman
-        document.getElementById('mrForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Mencegah reload halaman
+      outputText.value = report.trim();
+      adjustTextareaHeight(outputText); // Menyesuaikan tinggi textarea output
+    });
 
-            const formData = new FormData(this);
+    // Fungsi Copy ke Clipboard
+    copyButton.addEventListener('click', () => {
+      outputText.select();
+      document.execCommand('copy');
+      alert('Teks berhasil disalin ke clipboard!');
+    });
 
-            fetch('process.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                // Tampilkan hasil di bawah formulir
-                document.getElementById('outputContainer').classList.remove('hidden');
-                document.getElementById('outputText').textContent = data;
-            })
-            .catch(error => console.error('Error:', error));
-        });
+    // Penyesuaian tinggi textarea input
+    document.addEventListener('input', (e) => {
+      if (e.target.tagName === 'TEXTAREA') {
+        e.target.style.height = 'auto';
+        e.target.style.height = `${e.target.scrollHeight}px`;
+      }
+    });
 
-        // Fungsi untuk menyalin teks ke clipboard
-        function copyToClipboard() {
-            const text = document.getElementById('outputText').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Text berhasil disalin ke clipboard!");
-            });
-        }
-    </script>
+    // Menyesuaikan tinggi textarea output agar menyesuaikan dengan panjang teks
+    function adjustTextareaHeight(textarea) {
+      textarea.style.height = 'auto'; // Reset tinggi
+      textarea.style.height = `${textarea.scrollHeight}px`; // Atur tinggi sesuai konten
+    }
+  </script>
 </body>
 </html>
